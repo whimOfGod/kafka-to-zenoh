@@ -1,0 +1,31 @@
+version: '3.8'
+
+# Services for the Kafka and Zookeeper containers with the configuration of the ports, environment variables, and the image to use
+# we used the latest to avoid any issues with the version of the image
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    ports:
+      - "2181:2181"
+
+# Kafka service with the configuration of the broker id, zookeeper connection, advertised listeners, listeners, replication factor
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      # Changed localhost to kafka for proper Docker networking
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_MESSAGE_MAX_BYTES: 2000000 # 2MB for the size of messages that can be sent to Kafka to avoid the error "Message is too large"
+      KAFKA_REPLICA_FETCH_MAX_BYTES: 2000000
+      EST_MAX_BYTES: 20000000
